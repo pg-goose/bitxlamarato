@@ -61,3 +61,7 @@ h24
 altitud
 latitud
 longitud
+
+
+
+
