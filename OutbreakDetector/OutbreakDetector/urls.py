@@ -24,7 +24,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('django.contrib.auth.urls')),
     path('escoles/', EscolesAdminView.as_view(), name='escoles'),
-    path('qr/<str:url>/', QRCodeView.as_view(), name='qr_code'),
-    path('display-qr/', QRCodeDisplayView.as_view(), name='display_qr'),
+    path('qr/', QRCodeView.as_view(), name='qr_code'),
+    path('display-qr/<int:escola>/<int:curs>/', QRCodeDisplayView.as_view(), name='display_qr'),
     path('informe/<int:escola>/<int:curs>/', InformeView.as_view(), name='informe'),
 ]

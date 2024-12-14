@@ -1,3 +1,13 @@
+from django.views.generic import TemplateView
+from .models import Informe
+from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
+from django.views.generic import TemplateView
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from .models import Informe, Escola, Curs
+import json
+from datetime import date
 from django.contrib.auth.views import LoginView
 from django.views.generic import TemplateView
 from django.contrib.auth.mixins import UserPassesTestMixin
@@ -77,22 +87,21 @@ class EscolesAdminView(UserPassesTestMixin, TemplateView):
 
 class QRCodeDisplayView(View):
     def get(self, request, *args, **kwargs):
-        # Define the URL to encode in the QR code
-        url_to_encode = 
-        # Generate the URL for the QRCodeView that serves the QR image
-        qr_code_url = reverse("qr_code", kwargs={"url": url_to_encode})
+        escola = self.kwargs.get('escola', '/')
+        curs = self.kwargs.get('curs', '/')
+        base_url = request.build_absolute_uri('/').rstrip('/')  # Remove trailing slash
+        qr_code_url = f'{base_url}/qr?url={base_url}/informe/{escola}/{curs}/'
 
-        # Pass the QR code URL to the template
         context = {
             "qr_code_url": qr_code_url
         }
-        return render(request, "qr_display.html", context)
-
+        return render(request, "reportQR.html", context)
+    
 
 class QRCodeView(View):
     def get(self, request, *args, **kwargs):
-        # URL to encode
-        url = self.kwargs.get('url', 'https://example.com')
+        # Retrieve the 'url' parameter from the query string (e.g., ?url=some-url)
+        url = request.GET.get('url', '/')
         
         # Generate the QR code
         qr = qrcode.QRCode(
@@ -114,18 +123,8 @@ class QRCodeView(View):
 
         # Return the image as an HTTP response
         return HttpResponse(buffer, content_type="image/png")
-from django.views.generic import TemplateView
-from .models import Informe
-
-from django.shortcuts import get_object_or_404
-from django.http import JsonResponse
-from django.views.generic import TemplateView
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
-from .models import Informe, Escola, Curs
-import json
-from datetime import date
-
+    
+    
 @method_decorator(csrf_exempt, name='dispatch')  # To allow POST requests without CSRF token
 class InformeView(TemplateView):
     template_name = 'informe.html'
