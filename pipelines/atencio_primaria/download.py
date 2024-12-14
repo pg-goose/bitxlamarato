@@ -54,7 +54,7 @@ class ParamsAtencioPrimaria:
     def query(self):
         if not self.valid:
             raise ValueError("invalid params")
-        return f"?$limit={self.limit}&$offset={self.offset}&$select={self.select}&$where=any >= {self.yearStart} AND any <= {self.yearEnd}&$order=any DESC"
+        return f"?$limit={self.limit}&$offset={self.offset}&$select={self.select}&$where=any >= {self.yearStart} AND any <= {self.yearEnd}&$order=data DESC"
 
 class ClientAtencioPrimaria():
     SOURCE_URL="https://analisi.transparenciacatalunya.cat/resource/fa7i-d8gc.json"
@@ -62,7 +62,6 @@ class ClientAtencioPrimaria():
     def __init__(self, output, params: ParamsAtencioPrimaria):
         self.output = output
         self.params = params
-        print(self.params.query)
         os.makedirs(os.path.dirname(self.output), exist_ok=True)
 
     def fetchBatch(self, limit=50000, offset=0):
