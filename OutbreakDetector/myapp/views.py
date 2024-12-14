@@ -8,6 +8,11 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from .models import Escola, Curs
 from django import forms
+from django.http import HttpResponse
+from django.views import View
+import qrcode
+from io import BytesIO
+
 
 class RedirectUserView(LoginView):
     template_name = 'login.html'
@@ -68,3 +73,44 @@ class EscolesAdminView(UserPassesTestMixin, TemplateView):
         context['escola_form'] = escola_form
         context['curs_form'] = curs_form
         return render(request, self.template_name, context)
+
+
+class QRCodeDisplayView(View):
+    def get(self, request, *args, **kwargs):
+        # Define the URL to encode in the QR code
+        url_to_encode = 
+        # Generate the URL for the QRCodeView that serves the QR image
+        qr_code_url = reverse("qr_code", kwargs={"url": url_to_encode})
+
+        # Pass the QR code URL to the template
+        context = {
+            "qr_code_url": qr_code_url
+        }
+        return render(request, "qr_display.html", context)
+
+
+class QRCodeView(View):
+    def get(self, request, *args, **kwargs):
+        # URL to encode
+        url = self.kwargs.get('url', 'https://example.com')
+        
+        # Generate the QR code
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=10,
+            border=4,
+        )
+        qr.add_data(url)
+        qr.make(fit=True)
+
+        # Create an image of the QR code
+        img = qr.make_image(fill_color="black", back_color="white")
+        
+        # Save the image to a BytesIO stream
+        buffer = BytesIO()
+        img.save(buffer, format="PNG")
+        buffer.seek(0)
+
+        # Return the image as an HTTP response
+        return HttpResponse(buffer, content_type="image/png")
