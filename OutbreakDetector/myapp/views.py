@@ -1,3 +1,27 @@
+from django.views.generic import TemplateView
+from .models import Informe
+from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
+from django.views.generic import TemplateView
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from .models import Informe, Escola, Curs
+import json
+from datetime import date
+from django.contrib.auth.views import LoginView
+from django.views.generic import TemplateView
+from django.contrib.auth.mixins import UserPassesTestMixin
+from django.contrib.auth.mixins import UserPassesTestMixin
+from django.views.generic import TemplateView
+from django.http import HttpResponseForbidden
+from django.shortcuts import redirect, render
+from django.urls import reverse
+from .models import Escola, Curs
+from django import forms
+from django.http import HttpResponse
+from django.views import View
+import qrcode
+from io import BytesIO
 from .models import Escola, Curs, Informe
 import json
 from datetime import date
@@ -72,6 +96,47 @@ class EscolesAdminView(UserPassesTestMixin, TemplateView):
         context['curs_form'] = curs_form
         return render(request, self.template_name, context)
 
+
+class QRCodeDisplayView(View):
+    def get(self, request, *args, **kwargs):
+        escola = self.kwargs.get('escola', '/')
+        curs = self.kwargs.get('curs', '/')
+        base_url = request.build_absolute_uri('/').rstrip('/')  # Remove trailing slash
+        qr_code_url = f'{base_url}/qr?url={base_url}/informe/{escola}/{curs}/'
+
+        context = {
+            "qr_code_url": qr_code_url
+        }
+        return render(request, "reportQR.html", context)
+    
+
+class QRCodeView(View):
+    def get(self, request, *args, **kwargs):
+        # Retrieve the 'url' parameter from the query string (e.g., ?url=some-url)
+        url = request.GET.get('url', '/')
+        
+        # Generate the QR code
+        qr = qrcode.QRCode(
+            version=1,
+            error_correction=qrcode.constants.ERROR_CORRECT_L,
+            box_size=10,
+            border=4,
+        )
+        qr.add_data(url)
+        qr.make(fit=True)
+
+        # Create an image of the QR code
+        img = qr.make_image(fill_color="black", back_color="white")
+        
+        # Save the image to a BytesIO stream
+        buffer = BytesIO()
+        img.save(buffer, format="PNG")
+        buffer.seek(0)
+
+        # Return the image as an HTTP response
+        return HttpResponse(buffer, content_type="image/png")
+    
+    
 @method_decorator(csrf_exempt, name='dispatch')  # To allow POST requests without CSRF token
 class InformeView(TemplateView):
     template_name = 'informe.html'
