@@ -15,7 +15,6 @@ class Curs(models.Model):
     nom = models.CharField(max_length=100)
     numAlumnes = models.IntegerField()
     edatMitja = models.IntegerField()
-
     escola = models.ForeignKey(Escola, on_delete=models.CASCADE)
 
     def __str__(self):

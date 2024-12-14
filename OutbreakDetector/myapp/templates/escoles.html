@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Escoles Admin</title>
+    <style>
+      .card {
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 16px;
+        margin: 16px 0;
+        box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.1);
+      }
+      h2 {
+        margin-top: 0;
+      }
+      button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Escoles Admin</h1>
+
+    <!-- Card for Nova Escola -->
+    <div class="card">
+      <h2>Nova Escola</h2>
+      <form method="post">
+        {% csrf_token %} {{ escola_form.as_p }}
+        <button type="submit" name="escola_form_submit">Add Escola</button>
+      </form>
+    </div>
+
+    <!-- Card for Nou Curs -->
+    <div class="card">
+      <h2>Nou Curs</h2>
+      <form method="post">
+        {% csrf_token %} {{ curs_form.as_p }}
+        <button type="submit" name="curs_form_submit">Add Curs</button>
+      </form>
+    </div>
+  </body>
+</html>
