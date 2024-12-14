@@ -40,18 +40,3 @@ class Informe(models.Model):
         choices=Simptoma.choices,
         default=Simptoma.ALTRES,
     )
-
-        
-        
-        
-        
-        
-        
-        
-        
-        
-
-
-    data = models.DateField()
-    curs = models.ForeignKey(Curs, on_delete=models.CASCADE)
-    simptoma = 
