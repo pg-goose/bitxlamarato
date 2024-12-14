@@ -11,6 +11,9 @@ Temperatura=32
 # Check codi Municipi
 https://api.meteo.cat/referencia/v1/municipis
 Barcelona=080193
+Lleida=251207
+Falset=430555
+Badalona=080155
 
 # Check estacio referencia Dada/Municipi
 https://api.meteo.cat/xema/v1/representatives/metadades/municipis/080193/variables/32
