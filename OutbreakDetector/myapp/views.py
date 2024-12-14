@@ -19,9 +19,12 @@ class RedirectUserView(LoginView):
     def get_success_url(self):
         user = self.request.user
         if user.is_superuser:
-            return '/admin/'
+            relative_url = reverse('escoles')  # Reverse lookup for your route
         else:
-            return '/alertas/'
+            relative_url = reverse('alertas')  # Reverse lookup for your route
+        
+        # Build absolute URI
+        return self.request.build_absolute_uri(relative_url)
 
 # Form Definitions
 class EscolaForm(forms.ModelForm):
@@ -114,7 +117,9 @@ class AlertasView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        informes = Informe.objects.all()
+
+        escoles = Escola.objects.all()
+        context['escoles'] = escoles
 
         # Aggregate the count of each `Simptoma`
         result = (
@@ -161,9 +166,6 @@ class AlertasEscolaView(TemplateView):
                 return context
 
             # Filter `Informe` records by `Curs` linked to the specified `Escola`
-            informes = Informe.objects.filter(curs__escola=escola)
-
-            # Aggregate the count of each `Simptoma`
             result = (
                 Informe.objects.filter(
                     curs__escola_id=escola_id,  # Filter by Escola ID
