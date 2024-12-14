@@ -22,7 +22,19 @@ from django.http import HttpResponse
 from django.views import View
 import qrcode
 from io import BytesIO
-
+from .models import Escola, Curs, Informe
+import json
+from datetime import date
+from django import forms
+from django.urls import reverse
+from django.http import HttpResponseForbidden, JsonResponse
+from django.shortcuts import redirect, render, get_object_or_404
+from django.db.models import Count
+from django.views.generic import TemplateView
+from django.contrib.auth.views import LoginView
+from django.contrib.auth.mixins import UserPassesTestMixin
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 
 class RedirectUserView(LoginView):
     template_name = 'login.html'
@@ -162,3 +174,89 @@ class InformeView(TemplateView):
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
 
+class AlertasView(TemplateView):
+    template_name = 'alertas.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        informes = Informe.objects.all()
+
+        # Aggregate the count of each `Simptoma`
+        result = (
+            Informe.objects.filter(
+                data=date.today(),          # Filter by current date
+            )
+            .values('curs__escola__nom', 'simptoma')             # Group by simptoma
+            .annotate(simptoma_count=Count('id'))  # Count records in each group
+            .filter(simptoma_count__gt=5)   # Only include groups with more than 5 records
+        )
+        alerts = []
+        for row in result:
+            key = row['simptoma']
+            count = row['simptoma_count']
+            severity = 'Baixa' if count <= 5 else 'Mitjana'
+            severity = 'Alta' if count > 10 else severity
+            alert = {
+                'simptoma': {
+                    'key': key,
+                    'label': Informe.Simptoma(key).label,
+                },
+                'quantitat': count,
+                'escola': row['curs__escola__nom'],
+                'gravetat': severity,
+            }
+            alerts.append(alert)
+        context['alerts'] = alerts
+        return context
+    
+class AlertasEscolaView(TemplateView):
+    template_name = 'alertas_escola.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Check if 'escola' parameter is in the URL
+        escola_id = kwargs.get('escola')
+        if escola_id:
+            # Get the Escola object
+            try:
+                escola = Escola.objects.get(pk=escola_id)
+                context['escola'] = escola
+            except Escola.DoesNotExist:
+                context['error'] = "Escola not found"
+                return context
+
+            # Filter `Informe` records by `Curs` linked to the specified `Escola`
+            informes = Informe.objects.filter(curs__escola=escola)
+
+            # Aggregate the count of each `Simptoma`
+            result = (
+                Informe.objects.filter(
+                    curs__escola_id=escola_id,  # Filter by Escola ID
+                    data=date.today(),          # Filter by current date
+                )
+                .values('simptoma')             # Group by simptoma
+                .annotate(simptoma_count=Count('id'))  # Count records in each group
+                .filter(simptoma_count__gt=5)   # Only include groups with more than 5 records
+            )
+            alerts = []
+            for row in result:
+                key = row['simptoma']
+                count = row['simptoma_count']
+                severity = 'Baixa' if count <= 5 else 'Mitjana'
+                severity = 'Alta' if count > 10 else severity
+                alert = {
+                    'simptoma': {
+                        'key': key,
+                        'label': Informe.Simptoma(key).label,
+                    },
+                    'quantitat': count,
+                    'escola': escola.nom,
+                    'gravetat': severity,
+                }
+                alerts.append(alert)
+            context['alerts'] = alerts
+        else:
+            context['alerts'] = []
+            context['error'] = "No escola parameter provided"
+        
+        return context
