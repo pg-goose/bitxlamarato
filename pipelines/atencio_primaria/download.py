@@ -27,7 +27,7 @@ Columns to select from the dataset, options are:
 argumentParser = argparse.ArgumentParser()
 argumentParser.add_argument("--output", required=False, default="./atencio_primaria.json")
 argumentParser.add_argument("--select", required=False, default="*", help=select_help)
-argumentParser.add_argument("--municipality", required=True, type=int, help="Municipality code to filter data")
+argumentParser.add_argument("--region", required=True, type=int, help="Region code to filter data")
 argumentParser.add_argument("--year-start", required=True, type=int, help="Year to start fetching data")
 argumentParser.add_argument("--year-end", required=True, type=int, help="Year to end fetching data")
 
@@ -35,10 +35,11 @@ class ParamsAtencioPrimaria:
     MIN_YEAR = 2015
     MAX_YEAR = 2024
 
-    def __init__(self, select, municipality, yearStart, yearEnd, limit=50000, offset=0):
+    def __init__(self, select, region
+, yearStart, yearEnd, limit=50000, offset=0):
         self.valid = False
         self.select = select
-        self.municipality = municipality
+        self.region = region
         self.yearStart = yearStart
         self.yearEnd = yearEnd
         self.limit = limit
@@ -56,7 +57,8 @@ class ParamsAtencioPrimaria:
     def query(self):
         if not self.valid:
             raise ValueError("Invalid parameters")
-        return f"?$limit={self.limit}&$offset={self.offset}&$select={self.select}&codi_regio={self.municipality}&$where=any >= {self.yearStart} AND any <= {self.yearEnd}&$order=data DESC"
+        return f"?$limit={self.limit}&$offset={self.offset}&$select={self.select}&codi_regio={self.region
+    }&$where=any >= {self.yearStart} AND any <= {self.yearEnd}&$order=data DESC"
 
 class ClientAtencioPrimaria:
     SOURCE_URL = "https://analisi.transparenciacatalunya.cat/resource/fa7i-d8gc.json"
@@ -99,7 +101,8 @@ class ClientAtencioPrimaria:
 if __name__ == "__main__":
     args = argumentParser.parse_args()
     try:
-        apiParams = ParamsAtencioPrimaria("*", args.municipality, args.year_start, args.year_end)
+        apiParams = ParamsAtencioPrimaria("*", args.region
+    , args.year_start, args.year_end)
     except ValueError as e:
         print(f"Invalid arguments: {e}")
         exit(1)
