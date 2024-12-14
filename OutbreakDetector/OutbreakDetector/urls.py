@@ -17,10 +17,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 
-from myapp.views import EscolesAdminView
+from myapp.views import EscolesAdminView, InformeView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('django.contrib.auth.urls')),
-    path('escoles/', EscolesAdminView.as_view(), name='escoles')
+    path('escoles/', EscolesAdminView.as_view(), name='escoles'),
+    path('informe/<int:escola>/<int:curs>/', InformeView.as_view(), name='informe'),
 ]

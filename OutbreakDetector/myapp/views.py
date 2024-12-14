@@ -68,3 +68,53 @@ class EscolesAdminView(UserPassesTestMixin, TemplateView):
         context['escola_form'] = escola_form
         context['curs_form'] = curs_form
         return render(request, self.template_name, context)
+
+from django.views.generic import TemplateView
+from .models import Informe
+
+from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
+from django.views.generic import TemplateView
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from .models import Informe, Escola, Curs
+import json
+from datetime import date
+
+@method_decorator(csrf_exempt, name='dispatch')  # To allow POST requests without CSRF token
+class InformeView(TemplateView):
+    template_name = 'informe.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        escola = kwargs.get('escola')
+        curs = kwargs.get('curs')
+
+        # Fetch escola and curs objects
+        context['escola'] = escola
+        context['curs'] = curs
+        context['simptomes'] = [{'key': choice[0], 'label': choice[1]} for choice in Informe.Simptoma.choices]
+        return context
+
+    def post(self, request, *args, **kwargs):
+        try:
+            data = json.loads(request.body)
+            escola_id = kwargs.get('escola')
+            curs_id = kwargs.get('curs')
+
+            escola = get_object_or_404(Escola, id=escola_id)
+            curs = get_object_or_404(Curs, id=curs_id, escola=escola)
+            simptomes = data.get('simptomes')
+            print(simptomes)
+            print(type(simptomes))
+
+            for simptoma in simptomes:
+                Informe.objects.create(
+                    data=date.today(),
+                    curs=curs,
+                    simptoma=simptoma,
+                )
+            return JsonResponse({'status': 'success', 'message': 'Informe enviat correctament!'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+

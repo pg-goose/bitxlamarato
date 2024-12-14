@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simptomes</title>
+    <style>
+        section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button.selected {
+            background-color: #28a745;
+        }
+
+        section button {
+            width: 10rem;
+            height: 10rem;
+        }
+    </style>
+</head>
+<body>
+    <h1>Simptomes Enum as JavaScript Array</h1>
+
+    <script>
+        const escola = "{{ escola }}";
+        const curs = "{{ curs }}";
+        const simptomes = {{ simptomes|safe }};
+        let selected = [];
+
+        console.log("Simptomes:", simptomes);
+
+        // Function to select/deselect simptomes
+        window.select = (key) => {
+            const button = document.querySelector(`button[data-key="${key}"]`);
+            if (selected.includes(key)) {
+                selected = selected.filter(item => item !== key);
+                button.classList.remove('selected');
+            } else {
+                selected.push(key);
+                button.classList.add('selected');
+            }
+            console.log("Selected:", selected);
+        };
+
+        // Function to send POST request
+        window.submitInforme = () => {
+            if (selected.length === 0) {
+                alert("Please select at least one simptoma.");
+                return;
+            }
+
+            const url = `/informe/${escola}/${curs}/`;
+            const data = { simptomes: selected }; // Submit the first selected simptoma for simplicity
+
+            fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(data),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === "success") {
+                        alert(data.message);
+                    } else {
+                        alert(`Error: ${data.message}`);
+                    }
+                })
+                .catch(error => {
+                    console.error("Error:", error);
+                    alert("An error occurred.");
+                });
+        };
+    </script>
+
+    <!-- Display simptomes buttons -->
+    <div id="simptomes">
+        <h2>Simptomes</h2>
+        <section>
+            {% for simptoma in simptomes %}
+            <button onclick="select('{{ simptoma.key }}')" data-key="{{ simptoma.key }}">
+                {{ simptoma.label }}
+            </button>
+            {% endfor %}
+        </section>
+        <button onclick="submitInforme()">Submit</button>
+    </div>
+</body>
+</html>
