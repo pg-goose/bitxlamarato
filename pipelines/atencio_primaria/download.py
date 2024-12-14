@@ -4,7 +4,7 @@ import requests
 import argparse
 from requests import get, HTTPError
 
-select_help ="""
+select_help = """
 Columns to select from the dataset, options are:
     *,
     data,
@@ -27,16 +27,18 @@ Columns to select from the dataset, options are:
 argumentParser = argparse.ArgumentParser()
 argumentParser.add_argument("--output", required=False, default="./atencio_primaria.json")
 argumentParser.add_argument("--select", required=False, default="*", help=select_help)
+argumentParser.add_argument("--municipality", required=True, type=int, help="Municipality code to filter data")
 argumentParser.add_argument("--year-start", required=True, type=int, help="Year to start fetching data")
 argumentParser.add_argument("--year-end", required=True, type=int, help="Year to end fetching data")
 
 class ParamsAtencioPrimaria:
-    MIN_YEAR=2015
-    MAX_YEAR=2024
+    MIN_YEAR = 2015
+    MAX_YEAR = 2024
 
-    def __init__(self, select, yearStart, yearEnd, limit=50000, offset=0):
+    def __init__(self, select, municipality, yearStart, yearEnd, limit=50000, offset=0):
         self.valid = False
         self.select = select
+        self.municipality = municipality
         self.yearStart = yearStart
         self.yearEnd = yearEnd
         self.limit = limit
@@ -53,22 +55,24 @@ class ParamsAtencioPrimaria:
     @property
     def query(self):
         if not self.valid:
-            raise ValueError("invalid params")
-        return f"?$limit={self.limit}&$offset={self.offset}&$select={self.select}&$where=any >= {self.yearStart} AND any <= {self.yearEnd}&$order=data DESC"
+            raise ValueError("Invalid parameters")
+        return f"?$limit={self.limit}&$offset={self.offset}&$select={self.select}&codi_regio={self.municipality}&$where=any >= {self.yearStart} AND any <= {self.yearEnd}&$order=data DESC"
 
-class ClientAtencioPrimaria():
-    SOURCE_URL="https://analisi.transparenciacatalunya.cat/resource/fa7i-d8gc.json"
+class ClientAtencioPrimaria:
+    SOURCE_URL = "https://analisi.transparenciacatalunya.cat/resource/fa7i-d8gc.json"
 
     def __init__(self, output, params: ParamsAtencioPrimaria):
         self.output = output
         self.params = params
         os.makedirs(os.path.dirname(self.output), exist_ok=True)
+        print(f"Output directory: {os.path.dirname(self.output)}")
 
     def fetchBatch(self, limit=50000, offset=0):
         self.params.offset = offset
         self.params.limit = limit
         response = get(f"{ClientAtencioPrimaria.SOURCE_URL}{self.params.query}")
         response.raise_for_status()
+        print(f"Fetching data batch: offset={offset}, limit={limit}")
         return response.json()
 
     def fetchAll(self):
@@ -85,22 +89,25 @@ class ClientAtencioPrimaria():
             while True:
                 batch = self.fetchBatch(limit, offset)
                 if len(batch) == 0:
+                    print("No more data to fetch, exiting loop")
                     break
                 for record in batch:
                     f.write(json.dumps(record) + "\n")  # Write each record as a new line
                 offset += limit
+        print("Data fetching and writing complete")
 
 if __name__ == "__main__":
     args = argumentParser.parse_args()
     try:
-        apiParams = ParamsAtencioPrimaria("*", args.year_start, args.year_end)
+        apiParams = ParamsAtencioPrimaria("*", args.municipality, args.year_start, args.year_end)
     except ValueError as e:
         print(f"Invalid arguments: {e}")
         exit(1)
 
     client = ClientAtencioPrimaria(args.output, apiParams)
     try:
-        data = client.fetchAll()
+        print("Starting to fetch data...")
+        client.fetchAll()
     except HTTPError as e:
         print(f"Error fetching data: {e}")
         exit(1)
