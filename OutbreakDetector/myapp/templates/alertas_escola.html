@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alertas</title>
+    <style>
+        article {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+            box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+
+</head>
+<body>
+    <h1>Alertas a l'escola <strong>{{ escola }}</strong></h1>
+
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% else %}
+        {% if alerts %}
+            <ul>
+                {% for alert in alerts %}
+                    <article>
+                        <strong>{{ alert.quantitat }}</strong>
+                        casos de
+                        <strong>{{ alert.simptoma.label }}</strong>
+                    </article>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No alerts found for the specified Escola.</p>
+        {% endif %}
+    {% endif %}
+</body>
+</html>
