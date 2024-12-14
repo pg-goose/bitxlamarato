@@ -17,8 +17,10 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 
+from myapp.views import AdminOutbreaksView
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('django.contrib.auth.urls')),
-    path('admin/outbreaks/', )
+    path('outbreaks/', AdminOutbreaksView.as_view(), name='admin_outbreaks'),
 ]

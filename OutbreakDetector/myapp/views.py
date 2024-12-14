@@ -1,4 +1,7 @@
 from django.contrib.auth.views import LoginView
+from django.views.generic import TemplateView
+from django.contrib.auth.mixins import UserPassesTestMixin
+
 
 class RedirectUserView(LoginView):
     template_name = 'login.html'
@@ -11,10 +14,24 @@ class RedirectUserView(LoginView):
         else:
             return '/alertas/'
 
-class AdminOutbreaksView(LoginRequiredMixin, TemplateView):
+class AdminOutbreaksView(UserPassesTestMixin, TemplateView):
     template_name = 'admin_outbreaks.html'
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['outbreaks'] = Outbreak.objects.all()
-        return context
+    def test_func(self):
+        return self.request.user.is_superuser
+
+
+from django.views.generic.edit import FormView
+from django.urls import reverse_lazy
+from .models import Escola
+from .forms import EscolaForm  # Create a form class for the model
+
+class EscolaAddView(FormView):
+    template_name = 'nova_escola.html'  # Template for the form
+    form_class = EscolaForm            # Use the form class for Escola
+    success_url = reverse_lazy('success_page')  # Redirect URL after form submission
+
+    def form_valid(self, form):
+        # Save the form data as a new Escola object
+        form.save()
+        return super().form_valid(form)
