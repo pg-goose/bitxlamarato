@@ -7,8 +7,8 @@ class Escola(models.Model):
     nom = models.CharField(max_length=100)
     regio = models.CharField(max_length=100)
     municipi = models.CharField(max_length=100)
-    lat = models.FloatField(default=41.3851)
-    lon = models.FloatField(default=2.1734)
+    lat = models.FloatField(default=41.41810362181554)
+    lon = models.FloatField(default=2.151507746987765)
 
     def __str__(self):
         return self.nom

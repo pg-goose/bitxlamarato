@@ -126,7 +126,7 @@ class AlertasView(TemplateView):
             Informe.objects.filter(
                 data=date.today(),          # Filter by current date
             )
-            .values('curs__escola__nom', 'simptoma')             # Group by simptoma
+            .values('curs__escola__nom', 'simptoma', "curs__escola__lat", "curs__escola__lon")             # Group by simptoma
             .annotate(simptoma_count=Count('id'))  # Count records in each group
             .filter(simptoma_count__gt=5)   # Only include groups with more than 5 records
         )
@@ -144,9 +144,11 @@ class AlertasView(TemplateView):
                 'quantitat': count,
                 'escola': row['curs__escola__nom'],
                 'gravetat': severity,
+                'lat': row['curs__escola__lat'],
+                'lon': row['curs__escola__lon'],
             }
             alerts.append(alert)
-        context['alerts'] = alerts
+        context['alertas'] = alerts
         return context
     
 class AlertasEscolaView(TemplateView):
@@ -160,7 +162,14 @@ class AlertasEscolaView(TemplateView):
             # Get the Escola object
             try:
                 escola = Escola.objects.get(pk=escola_id)
-                context['escola'] = escola
+                context['escola'] = {
+                    'id': escola.id,
+                    'nom': escola.nom,
+                    'regio': escola.regio,
+                    'municipi': escola.municipi,
+                    'lat': escola.lat,
+                    'lon': escola.lon
+                }
             except Escola.DoesNotExist:
                 context['error'] = "Escola not found"
                 return context
@@ -191,9 +200,9 @@ class AlertasEscolaView(TemplateView):
                     'gravetat': severity,
                 }
                 alerts.append(alert)
-            context['alerts'] = alerts
+            context['alertas'] = alerts
         else:
-            context['alerts'] = []
+            context['alertas'] = []
             context['error'] = "No escola parameter provided"
         
         return context

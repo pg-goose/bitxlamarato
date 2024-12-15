@@ -1,39 +1,131 @@
+{% load leaflet_tags %}
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alertas</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Alertas - {{escola.nom}}</title>
+    {% leaflet_js %}
+    {% leaflet_css %}
     <style>
-        article {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 16px;
-            margin: 16px 0;
-            box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.1);
-        }
+      /* General styles for layout and spacing */
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        box-sizing: border-box;
+      }
+
+      h1 {
+        margin: 0;
+        padding: 1rem;
+        text-align: center;
+        background-color: #f4f4f4;
+        border-bottom: 1px solid #ddd;
+      }
+
+      div.container {
+        display: flex;
+        flex: 1;
+        gap: 1rem;
+        padding: 1rem;
+        box-sizing: border-box;
+      }
+
+      article {
+        padding: 1rem;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.1);
+        background-color: #fff;
+      }
+
+      /* Styling for #alerts */
+      #alerts {
+        flex-shrink: 0;
+        width: 15vw;
+        overflow-y: auto;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.1);
+        padding: 1rem;
+        box-sizing: border-box;
+        background-color: #fff;
+      }
+      #alerts ul {
+        padding: 0;
+        margin: 0;
+        list-style-type: none;
+      }
+
+      #alerts article {
+        margin-bottom: 1rem;
+      }
+      /* Styling for #escoles */
+      #escoles {
+        flex-shrink: 0;
+        width: 15vw;
+        overflow-y: auto;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.1);
+        padding: 1rem;
+        box-sizing: border-box;
+        background-color: #fff;
+      }
+
+      #escoles article {
+        margin-bottom: 1rem;
+      }
+
+      /* Styling for #map */
+      #map {
+        flex: 1;
+        border: 1px solid #ddd;
+        height: 80vh;
+        width: 70vw;
+        border-radius: 8px;
+        box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.1);
+        background-color: #eaeaea;
+        padding: 1rem;
+        box-sizing: border-box;
+      }
     </style>
-
-</head>
-<body>
-    <h1>Alertas a l'escola <strong>{{ escola }}</strong></h1>
-
-    {% if error %}
-        <p style="color: red;">{{ error }}</p>
-    {% else %}
-        {% if alerts %}
-            <ul>
-                {% for alert in alerts %}
-                    <article>
-                        <strong>{{ alert.quantitat }}</strong>
-                        casos de
-                        <strong>{{ alert.simptoma.label }}</strong>
-                    </article>
-                {% endfor %}
-            </ul>
+  </head>
+  <body>
+    <h1>Alertes de l'escola {{escola.nom}}</h1>
+    <div class="container">
+      <section id="alerts">
+        {% if error %}
+        <p style="color: red">{{ error }}</p>
         {% else %}
-            <p>No alerts found for the specified Escola.</p>
+        <ul>
+          {% for alert in alertas %}
+          <article>
+            <strong>{{ alert.escola }}</strong><br />
+            <strong>{{ alert.quantitat }}</strong>
+            casos de
+            <strong>{{ alert.simptoma.label }}</strong><br />
+          </article>
+          {% endfor %}
+        </ul>
         {% endif %}
-    {% endif %}
-</body>
+      </section>
+      <div id="map"></div>
+      <script>
+        const e = {{escola|safe}};
+        console.log(e);
+        const map = L.map('map').setView([e.lat, e.lon], 10); // Default center
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 18,
+        }).addTo(map);
+  
+        const marker = L.marker([e.lat, e.lon]).addTo(map);
+        marker.bindPopup(`
+        <strong>${alert.escola}</strong>
+        `);
+      </script>
+    </div>
+  </body>
 </html>
