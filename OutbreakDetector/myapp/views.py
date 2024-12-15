@@ -1,40 +1,21 @@
-from django.views.generic import TemplateView
-from .models import Informe
-from django.shortcuts import get_object_or_404
-from django.http import JsonResponse
-from django.views.generic import TemplateView
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
-from .models import Informe, Escola, Curs
-import json
-from datetime import date
-from django.contrib.auth.views import LoginView
-from django.views.generic import TemplateView
-from django.contrib.auth.mixins import UserPassesTestMixin
-from django.contrib.auth.mixins import UserPassesTestMixin
-from django.views.generic import TemplateView
-from django.http import HttpResponseForbidden
-from django.shortcuts import redirect, render
-from django.urls import reverse
-from .models import Escola, Curs
-from django import forms
-from django.http import HttpResponse
-from django.views import View
 import qrcode
-from io import BytesIO
-from .models import Escola, Curs, Informe
 import json
 from datetime import date
+from io import BytesIO
+
 from django import forms
-from django.urls import reverse
-from django.http import HttpResponseForbidden, JsonResponse
-from django.shortcuts import redirect, render, get_object_or_404
-from django.db.models import Count
-from django.views.generic import TemplateView
-from django.contrib.auth.views import LoginView
 from django.contrib.auth.mixins import UserPassesTestMixin
+from django.contrib.auth.views import LoginView
+from django.db.models import Count
+from django.http import HttpResponse, HttpResponseForbidden, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils.decorators import method_decorator
+from django.views import View
 from django.views.decorators.csrf import csrf_exempt
+from django.views.generic import TemplateView
+
+from .models import Curs, Escola, Informe
 
 class RedirectUserView(LoginView):
     template_name = 'login.html'
@@ -100,18 +81,29 @@ class EscolesAdminView(UserPassesTestMixin, TemplateView):
         return render(request, self.template_name, context)
 
 
-class QRCodeDisplayView(View):
+class EscolaByIdView(View):
     def get(self, request, *args, **kwargs):
-        escola = self.kwargs.get('escola', '/')
-        curs = self.kwargs.get('curs', '/')
-        base_url = request.build_absolute_uri('/').rstrip('/')  # Remove trailing slash
-        qr_code_url = f'{base_url}/qr?url={base_url}/informe/{escola}/{curs}/'
+        escola_id = self.kwargs.get('escola')
+        escola = get_object_or_404(Escola, id=escola_id)
+        cursos = Curs.objects.filter(escola=escola).values('id', 'nom') 
+        return JsonResponse({
+            'id': escola.id,
+            'nom': escola.nom,
+            'regio': escola.regio,
+            'municipi': escola.municipi,
+            'lat': escola.lat,
+            'lon': escola.lon,
+            'cursos': list(cursos),
+        })
 
-        context = {
-            "qr_code_url": qr_code_url
-        }
-        return render(request, "reportQR.html", context)
+class QRCodeDisplayView(TemplateView):
+    template_name = 'reportQR.html'
     
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['escoles'] = list(Escola.objects.all())
+        context['base_url'] = self.request.build_absolute_uri('/').rstrip('/')  # Remove trailing slash
+        return context
 
 class QRCodeView(View):
     def get(self, request, *args, **kwargs):
@@ -270,4 +262,11 @@ class AlertasEscolaView(TemplateView):
             context['alertas'] = []
             context['error'] = "No escola parameter provided"
         
+        return context
+    
+class RoadmapView(TemplateView):
+    template_name = 'roadmap.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
         return context

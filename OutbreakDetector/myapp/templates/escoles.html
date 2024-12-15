@@ -3,24 +3,80 @@
   <head>
     <title>Escoles Admin</title>
     <style>
+      /* General body styling */
+      body {
+        font-family: "Arial", sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f9f9f9;
+        color: #333;
+        line-height: 1.6;
+        padding: 16px;
+      }
+
+      /* Heading styling */
+      h1 {
+        text-align: center;
+        color: #0056b3;
+        margin-bottom: 24px;
+      }
+
+      /* Card container */
       .card {
         border: 1px solid #ddd;
         border-radius: 8px;
         padding: 16px;
-        margin: 16px 0;
+        margin: 16px auto;
         box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.1);
+        background-color: #ffffff;
+        max-width: 600px;
       }
-      h2 {
+
+      /* Card headings */
+      .card h2 {
         margin-top: 0;
+        color: #007bff;
       }
+
+      /* Form element spacing */
+      .card form p {
+        margin-bottom: 16px;
+      }
+
+      /* Label styling */
+      label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 8px;
+        color: #333;
+      }
+
+      /* Input fields */
+      input[type="text"],
+      input[type="number"],
+      select {
+        width: calc(100% - 16px);
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 1rem;
+        background-color: #fff;
+        box-sizing: border-box;
+      }
+
+      /* Submit button */
       button {
         background-color: #007bff;
         color: white;
         border: none;
-        padding: 8px 16px;
+        padding: 10px 16px;
         border-radius: 4px;
         cursor: pointer;
+        font-size: 1rem;
+        text-transform: uppercase;
+        transition: background-color 0.3s ease-in-out;
       }
+
       button:hover {
         background-color: #0056b3;
       }
@@ -34,7 +90,7 @@
       <h2>Nova Escola</h2>
       <form method="post">
         {% csrf_token %} {{ escola_form.as_p }}
-        <button type="submit" name="escola_form_submit">Add Escola</button>
+        <button type="submit" name="escola_form_submit">Nova Escola</button>
       </form>
     </div>
 
@@ -43,7 +99,7 @@
       <h2>Nou Curs</h2>
       <form method="post">
         {% csrf_token %} {{ curs_form.as_p }}
-        <button type="submit" name="curs_form_submit">Add Curs</button>
+        <button type="submit" name="curs_form_submit">Nou Curs</button>
       </form>
     </div>
   </body>
