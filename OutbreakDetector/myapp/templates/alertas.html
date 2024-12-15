@@ -1,118 +1,138 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Alertas</title>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
+    <script
+      src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+      integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+      crossorigin=""
+    >
+        const map = L.map('map').setView([41.3851, 2.1734], 13);  // Default center at Barcelona
+    </script>
+
     <style>
-        /* General styles for layout and spacing */
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            box-sizing: border-box;
-        }
+      /* General styles for layout and spacing */
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        box-sizing: border-box;
+      }
 
-        h1 {
-            margin: 0;
-            padding: 1rem;
-            text-align: center;
-            background-color: #f4f4f4;
-            border-bottom: 1px solid #ddd;
-        }
+      h1 {
+        margin: 0;
+        padding: 1rem;
+        text-align: center;
+        background-color: #f4f4f4;
+        border-bottom: 1px solid #ddd;
+      }
 
-        div.container {
-            display: flex;
-            flex: 1;
-            gap: 1rem;
-            padding: 1rem;
-            box-sizing: border-box;
-        }
+      div.container {
+        display: flex;
+        flex: 1;
+        gap: 1rem;
+        padding: 1rem;
+        box-sizing: border-box;
+      }
 
-        /* Styling for #alerts */
-        #alerts {
-            flex-shrink: 0;
-            width: 15vw;
-            overflow-y: auto;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.1);
-            padding: 1rem;
-            box-sizing: border-box;
-            background-color: #fff;
-        }
+      article {
+        padding: 1rem;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.1);
+        background-color: #fff;
+      }
 
-        #alerts ul {
-            padding: 0;
-            margin: 0;
-            list-style-type: none;
-        }
+      /* Styling for #alerts */
+      #alerts {
+        flex-shrink: 0;
+        width: 15vw;
+        overflow-y: auto;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.1);
+        padding: 1rem;
+        box-sizing: border-box;
+        background-color: #fff;
+      }
+      #alerts ul {
+        padding: 0;
+        margin: 0;
+        list-style-type: none;
+      }
 
-        #alerts article {
-            margin-bottom: 1rem;
-        }
+      #alerts article {
+        margin-bottom: 1rem;
+      }
+      /* Styling for #escoles */
+      #escoles {
+        flex-shrink: 0;
+        width: 15vw;
+        overflow-y: auto;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.1);
+        padding: 1rem;
+        box-sizing: border-box;
+        background-color: #fff;
+      }
 
-        /* Styling for #escoles */
-        #escoles {
-            flex-shrink: 0;
-            width: 15vw;
-            overflow-y: auto;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.1);
-            padding: 1rem;
-            box-sizing: border-box;
-            background-color: #fff;
-        }
+      #escoles article {
+        margin-bottom: 1rem;
+      }
 
-        #escoles article {
-            margin-bottom: 1rem;
-        }
-
-        /* Styling for #map */
-        #map {
-            flex: 1;
-            border: 1px solid #ddd;
-            height: 80vh;
-            width: 70vw;
-            border-radius: 8px;
-            box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.1);
-            background-color: #eaeaea;
-            padding: 1rem;
-            box-sizing: border-box;
-        }
+      /* Styling for #map */
+      #map {
+        flex: 1;
+        border: 1px solid #ddd;
+        height: 80vh;
+        width: 70vw;
+        border-radius: 8px;
+        box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.1);
+        background-color: #eaeaea;
+        padding: 1rem;
+        box-sizing: border-box;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <h1>Alertes</h1>
     <div class="container">
-        <section id="alerts">
-            {% if error %}
-            <p style="color: red;">{{ error }}</p>
-            {% else %}
-            <ul>
-                {% for alert in alerts %}
-                <article>
-                    <strong>{{ alert.escola }}</strong><br>
-                    <strong>{{ alert.quantitat }}</strong>
-                    casos de
-                    <strong>{{ alert.simptoma.label }}</strong><br>
-                </article>
-                {% endfor %}
-            </ul>
-            {% endif %}
-        </section>
-        <section id="escoles">
-            {% for escola in escoles %}
-            <article>
-                <strong>{{ escola.nom }}</strong>
-            </article>
-            {% endfor %}
-        </section>
-        <div id="map">
-            <!-- Map content goes here -->
-        </div>
+      <section id="alerts">
+        {% if error %}
+        <p style="color: red">{{ error }}</p>
+        {% else %}
+        <ul>
+          {% for alert in alerts %}
+          <article>
+            <strong>{{ alert.escola }}</strong><br />
+            <strong>{{ alert.quantitat }}</strong>
+            casos de
+            <strong>{{ alert.simptoma.label }}</strong><br />
+          </article>
+          {% endfor %}
+        </ul>
+        {% endif %}
+      </section>
+      <section id="escoles">
+        {% for escola in escoles %}
+        <a href="/alertas/{{ escola.id }}">
+          <article>
+            <strong>{{ escola.nom }}</strong>
+          </article>
+        </a>
+        {% endfor %}
+      </section>
+      <div id="map"></div>
     </div>
-</body>
+  </body>
 </html>
