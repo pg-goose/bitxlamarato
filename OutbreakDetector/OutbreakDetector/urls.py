@@ -17,13 +17,15 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 
-from myapp.views import EscolesAdminView, InformeView, AlertasView, AlertasEscolaView, RedirectUserView
+from myapp.views import EscolesAdminView, InformeView, AlertasView, AlertasEscolaView, RedirectUserView, QRCodeView, QRCodeDisplayView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/login/', RedirectUserView.as_view(), name='login'),
     path('accounts/', include('django.contrib.auth.urls')),
     path('escoles/', EscolesAdminView.as_view(), name='escoles'),
+    path('qr/', QRCodeView.as_view(), name='qr_code'),
+    path('display-qr/<int:escola>/<int:curs>/', QRCodeDisplayView.as_view(), name='display_qr'),
     path('informe/<int:escola>/<int:curs>/', InformeView.as_view(), name='informe'),
     path('alertas/', AlertasView.as_view(), name='alertas'),
     path('alertas/<int:escola>', AlertasEscolaView.as_view(), name='alertas_escola'),
